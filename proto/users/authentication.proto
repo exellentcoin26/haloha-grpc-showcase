@@ -1,0 +1,37 @@
+// This file defines the `AuthenticationService` that will be implemented by
+// the authentication micro-service.
+
+syntax = "proto3";
+
+package users;
+
+import "google/protobuf/empty.proto";
+
+// Here the contract is defined that other micro-services can rely on. This
+// contract is implemented by the authentication service and can then be used
+// like it is a normal function call by any other service.
+//
+// Important to note is that the
+service AuthenticationService {
+    rpc RegisterUser(RegisterRequest) returns (google.protobuf.Empty);
+
+    rpc LoginUser(LoginRequest) returns (LoginResponse);
+}
+
+message User {
+    string username = 1;
+    string password_hash = 2;
+}
+
+message RegisterRequest {
+    User user = 1;
+}
+
+message LoginRequest {
+    User user = 1;
+}
+
+message LoginResponse {
+    // JSON web-token (https://jwt.io/)
+    string token = 1;
+}
