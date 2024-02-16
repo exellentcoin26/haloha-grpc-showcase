@@ -3,6 +3,9 @@
 # Directory where the proto files are located
 PROTO_DIR="../proto"
 
+# Create directory if it does not exist
+mkdir -p "$PROTO_DIR"
+
 # Generate typescript code using
 protoc \
     --plugin=./node_modules/.bin/protoc-gen-ts_proto \
