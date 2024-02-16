@@ -87,14 +87,21 @@ impl AuthenticationService for Authenticator {
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    tracing_subscriber::fmt().init();
+
     let database = Arc::new(DataBase::new(HashMap::new()));
 
     let authenticator_service = AuthenticationServiceServer::new(Authenticator {
         db: database.clone(),
     });
-    let app = tonic::transport::Server::builder().add_service(authenticator_service);
+    let app = tonic::transport::Server::builder()
+        .accept_http1(true)
+        .trace_fn(|_| tracing::info_span!("request"))
+        .add_service(tonic_web::enable(authenticator_service));
 
-    if let Err(err) = app.serve(SocketAddr::from(([127, 0, 0, 1], PORT))).await {
+    let socket_addr = SocketAddr::from(([127, 0, 0, 1], PORT));
+    tracing::info!("Application should now be running at `{}`", socket_addr);
+    if let Err(err) = app.serve(socket_addr).await {
         eprintln!("{}", err)
     };
 

@@ -44,7 +44,7 @@ export async function login(formData: FormData): Promise<Result<string, FieldErr
     }
 
     // Connect to the grpc server running in rust.
-    const channel = createChannel("http://localhost:8080");
+    const channel = createChannel("http://127.0.0.1:8080");
     const client: AuthenticationServiceClient = createClient(AuthenticationServiceDefinition, channel);
 
     const loginResponse = await (async (): Promise<Result<LoginResponse, UserError>> => {
