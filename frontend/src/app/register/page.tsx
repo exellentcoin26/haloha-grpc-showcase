@@ -34,6 +34,11 @@ export default function Home() {
 
     // Login the user and set an appropriate message if succesful.
     const handleSubmit = async (formData: FormData) => {
+        if (Object.keys(fieldErrors).length !== 0) {
+            // reset errors
+            setFieldErrors({});
+        }
+
         const result = await register(formData);
         if (result.ok) {
             // do something here with the token.
@@ -81,7 +86,7 @@ export default function Home() {
                     type="submit"
                     className="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
                 >
-                    Login
+                    Register
                 </button>
             </form>
         </main>

@@ -90,7 +90,9 @@ impl AuthenticationService for Authenticator {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    tracing_subscriber::fmt().init();
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::DEBUG)
+        .init();
 
     let database = Arc::new(DataBase::new(HashMap::new()));
 

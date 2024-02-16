@@ -35,6 +35,11 @@ export default function Home() {
 
     // Login the user and set an appropriate message if succesful.
     const handleSubmit = async (formData: FormData) => {
+        if (Object.keys(fieldErrors).length !== 0) {
+            // reset errors
+            setFieldErrors({});
+        }
+
         const result = await login(formData);
         if (result.ok) {
             // do something here with the token.
