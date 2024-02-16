@@ -1,7 +1,8 @@
 use anyhow::{Context, Result};
 use proto::{
-    AuthenticationService, AuthenticationServiceServer, LoginRequest, LoginResponse,
-    RegisterRequest, User,
+    authentication_service_server::{AuthenticationService, AuthenticationServiceServer},
+    login_response, LoginError, LoginRequest, LoginResponse, RegisterError, RegisterRequest,
+    RegisterResponse, User,
 };
 use std::{collections::hash_map::HashMap, net::SocketAddr, sync::Arc};
 use tokio::sync::RwLock;
@@ -23,7 +24,7 @@ impl AuthenticationService for Authenticator {
     async fn register_user(
         &self,
         request: Request<RegisterRequest>,
-    ) -> Result<Response<()>, Status> {
+    ) -> Result<Response<RegisterResponse>, Status> {
         let RegisterRequest { user } = request.into_inner();
         let Some(User {
             username,
@@ -38,16 +39,15 @@ impl AuthenticationService for Authenticator {
 
         let mut database = self.db.write().await;
         let DataBaseEntry::Vacant(entry) = database.entry(username) else {
-            return Err(Status::new(
-                tonic::Code::AlreadyExists,
-                "username already exists",
-            ));
+            return Ok(Response::new(RegisterResponse {
+                error: Some(RegisterError::UsernameTaken.into()),
+            }));
         };
 
         // set the users password
         entry.insert(password_hash);
 
-        Ok(Response::new(()))
+        Ok(Response::new(RegisterResponse { error: None }))
     }
 
     async fn login_user(
@@ -68,20 +68,23 @@ impl AuthenticationService for Authenticator {
         };
 
         let database = self.db.read().await;
-        database
+        Ok(database
             .get(&username)
             .filter(|p| **p == password_hash)
             .map(|_| {
                 Response::new(LoginResponse {
-                    token: "some-nice-token-that-should-eventually-be-a-json-webtoken".to_string(),
+                    result: Some(login_response::Result::Token(
+                        "some-nice-token-that-should-eventually-be-a-json-webtoken".to_string(),
+                    )),
                 })
             })
-            .ok_or_else(|| {
-                Status::new(
-                    tonic::Code::InvalidArgument,
-                    "username/password combination incorrect",
-                )
-            })
+            .unwrap_or_else(|| {
+                Response::new(LoginResponse {
+                    result: Some(login_response::Result::Error(
+                        LoginError::InvalidCredentials.into(),
+                    )),
+                })
+            }))
     }
 }
 
