@@ -30,8 +30,7 @@ function handleLoginError(error: LoginError): FieldErrors {
 
 export default function Home() {
     // Keep track of errors.
-    // NOTE: This is not the best way, but is just and example. Errors should
-    // be displayed with the field and not at the bottom.
+    // NOTE: This is not the best way, but is just and example.
     const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
     // Login the user and set an appropriate message if succesful.
